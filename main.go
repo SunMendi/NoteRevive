@@ -9,6 +9,7 @@ import (
 	"notemind/internal/voice"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 )
 
 func main() {
@@ -54,6 +55,14 @@ func main() {
 	authHandler := auth.NewAuthHandler(authService)
 
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "https://noterevive-production.up.railway.app"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * 60 * 60, // 12 hours
+	}))
 
 	note.SetUpRoutes(router, notehandler)
 	auth.SetUpRoutes(router, authHandler)
