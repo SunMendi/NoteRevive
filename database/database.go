@@ -4,6 +4,7 @@ import (
 	//"fmt"
 	"log"
 	"os"
+	"fmt"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -18,14 +19,14 @@ func ConnectDB() (*gorm.DB, error) {
 		log.Panic("Error loading .Env File")
 	}
 
-	// dbname := os.Getenv("DB_NAME")
-	// dbuser := os.Getenv("DB_USER")
-	// dbport := os.Getenv("DB_PORT")
-	// dbhost := os.Getenv("DB_HOST")
-	// dbpass := os.Getenv("DB_PASS")
+	dbname := os.Getenv("DB_NAME")
+	dbuser := os.Getenv("DB_USER")
+	dbport := os.Getenv("DB_PORT")
+	dbhost := os.Getenv("DB_HOST")
+	dbpass := os.Getenv("DB_PASS")
 
-	// dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpass, dbname)
-	dsn:=os.Getenv("DATABASE_URL")
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpass, dbname)
+	//dsn:=os.Getenv("DATABASE_URL")
 
 	if dsn == "" {
 		log.Panic("Error Loading .Env File")
