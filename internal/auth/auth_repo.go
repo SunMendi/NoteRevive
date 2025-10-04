@@ -48,6 +48,7 @@ func (r *authRepo) SendDailySummary() error{
 	var users []User
 	var finalMessage string
 	var emailErrors []string
+	var sentCount int
 
 	err := r.db.Where("timezone IS NOT NULL AND timezone !=''").Find(&users).Error
 
@@ -71,10 +72,21 @@ func (r *authRepo) SendDailySummary() error{
 			emailErrors = append(emailErrors, fmt.Sprintf("invalid timezone %s: %v", tz, err))
 			continue
 		}
-		localTime := time.Now().In(loc)
 
 		for _, user := range users {
-			startOfDayLocal := time.Date(localTime.Year(), localTime.Month(), localTime.Day(), 0, 0, 0, 0, loc)
+			// Check if it's 8 PM in user's timezone
+			userLocalTime := time.Now().In(loc)
+			isEightPM := userLocalTime.Hour() == 20 // 20 = 8 PM in 24-hour format
+
+			if !isEightPM {
+				fmt.Printf("⏰ Skipping %s - Current time in %s is %d:00 (waiting for 20:00/8 PM)\n",
+					user.Email, tz, userLocalTime.Hour())
+				continue
+			}
+
+			fmt.Printf("🕗 It's 8 PM in %s timezone for user %s - sending email now!\n", tz, user.Email)
+
+			startOfDayLocal := time.Date(userLocalTime.Year(), userLocalTime.Month(), userLocalTime.Day(), 0, 0, 0, 0, loc)
 			endOfDayLocal := startOfDayLocal.Add(24 * time.Hour)
 			startUTC := startOfDayLocal.UTC()
 			endUTC := endOfDayLocal.UTC()
@@ -140,10 +152,17 @@ Keep growing, keep learning! ✨`
 				emailErrors = append(emailErrors, fmt.Sprintf("failed to send email to %s: %v", user.Email, err))
 				fmt.Printf("❌ Failed to send email to %s: %v\n", user.Email, err)
 			} else {
-				fmt.Printf("✅ Email sent successfully to %s\n", user.Email)
+				sentCount++
+				fmt.Printf("✅ Email sent successfully to %s at 8 PM %s time\n", user.Email, tz)
 			}
 		}
 	}
+
+	// Print summary
+	totalUsers := len(users)
+	skippedUsers := totalUsers - sentCount - len(emailErrors)
+	fmt.Printf("📊 Summary: Total users: %d, Sent: %d, Failed: %d, Skipped (wrong time): %d\n",
+		totalUsers, sentCount, len(emailErrors), skippedUsers)
 
 	// Return error summary if any emails failed
 	if len(emailErrors) > 0 {
