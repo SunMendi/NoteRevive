@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"log"
 	"os"
-	"fmt"
+	//"fmt"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
