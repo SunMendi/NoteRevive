@@ -245,7 +245,7 @@ func (r *authRepo) sendDailySummaryEmail(recipientEmail, recipientName, message 
 	res, err := mailjetClient.SendMailV31(&messages)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %v", err)
-	}
+	} 
 
 	fmt.Printf("📬 Mailjet response: %+v\n", res)
 	fmt.Printf("✅ Email sent successfully to %s\n", recipientEmail)
