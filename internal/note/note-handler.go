@@ -17,20 +17,27 @@ func NewNoteHandler(noteService NoteService) *NoteHandler {
 }
 
 func (h *NoteHandler) CreateNote(ctx *gin.Context) {
-
-	userID, exists := ctx.Get("user_id")
-    if !exists {
-        ctx.JSON(401, gin.H{"error": "User not authenticated"})
-        return
-    }
-	//get user id from middleware
-	var req CreateNoteDTO
-
-	if err := ctx.ShouldBind(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	// Get user_id from middleware context with proper type assertion
+	userIDInterface, exists := ctx.Get("user_id")
+	if !exists {
+		ctx.JSON(401, gin.H{"error": "User not authenticated"})
+		return
 	}
+	
+	// Convert interface{} to uint
+	userID, ok := userIDInterface.(uint)
+	if !ok {
+		ctx.JSON(401, gin.H{"error": "Invalid user ID type"})
+		return
+	}
+
+	var req CreateNoteDTO
+	if err := ctx.ShouldBind(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// ADD VALIDATION - Prevent empty notes
 
 	imageFile, err := ctx.FormFile("image")
 	if err != nil {
@@ -39,31 +46,47 @@ func (h *NoteHandler) CreateNote(ctx *gin.Context) {
 	
 	audioFile, err := ctx.FormFile("audio")
 	if err == nil {
-		if err := h.noteService.CreateVoiceNote(userID.(uint), audioFile, req.Title, imageFile); err != nil {
+		// Create voice note - declare note variable here
+		note, err := h.noteService.CreateVoiceNote(userID, audioFile, req.Title, imageFile)
+		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		ctx.JSON(http.StatusCreated, gin.H{"message": "Voice note created successfully"})
+		ctx.JSON(http.StatusCreated, gin.H{
+			"message": "Voice note created successfully",
+			"note": note,
+		})
 		return
 	}
 
-	err = h.noteService.CreateNote(userID.(uint), req.Title, req.Content, imageFile)
+	// Create regular note - declare note variable here
+	note, err := h.noteService.CreateNote(userID, req.Title, req.Content, imageFile)
 	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(201, gin.H{"message": "Note created successfully"})
-
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "Note created successfully",
+		"note": note,
+	})
 }
+
 
 func (h *NoteHandler) UpdateNote(ctx *gin.Context) {
 
-	userID, exists := ctx.Get("user_id")
-    if !exists {
-        ctx.JSON(401, gin.H{"error": "User not authenticated"})
-        return
-    }
+	userIDInterface, exists := ctx.Get("user_id")
+	if !exists {
+		ctx.JSON(401, gin.H{"error": "User not authenticated"})
+		return
+	}
+	
+	// Convert interface{} to uint
+	userID, ok := userIDInterface.(uint)
+	if !ok {
+		ctx.JSON(401, gin.H{"error": "Invalid user ID type"})
+		return
+	}
 
 	noteIDStr := ctx.Param("id")
 	noteID, err := strconv.ParseUint(noteIDStr, 10, 32)
@@ -92,7 +115,7 @@ func (h *NoteHandler) UpdateNote(ctx *gin.Context) {
 	// Replace with actual user from JWT middleware
 
 	// STEP 5: Update note
-	err = h.noteService.UpdateNote(uint(noteID), userID.(uint), req.Title, req.Content, imageFile)
+	err = h.noteService.UpdateNote(uint(noteID), userID, req.Title, req.Content, imageFile)
 	if err != nil {
 		// Handle different error types
 		if err.Error() == "note not found" {

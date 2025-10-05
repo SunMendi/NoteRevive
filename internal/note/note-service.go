@@ -17,8 +17,8 @@ import (
 )
 
 type NoteService interface {
-	CreateNote(userID uint, title string, content string, imageFile *multipart.FileHeader) error
-	CreateVoiceNote(userID uint, audioFile *multipart.FileHeader, title string, imageFile *multipart.FileHeader) error
+	CreateNote(userID uint, title string, content string, imageFile *multipart.FileHeader) (*Note, error)
+	CreateVoiceNote(userID uint, audioFile *multipart.FileHeader, title string, imageFile *multipart.FileHeader) (*Note, error)
 	UpdateNote(noteID uint, userID uint, title, content string, imageFile *multipart.FileHeader) error
 	GetOneNote(id uint) (*Note, error)
 }
@@ -76,9 +76,9 @@ func (s *noteService) handleImageUpload(noteID uint, imageFile *multipart.FileHe
 	return s.repo.CreateImg(noteImage)
 }
 
-func (s *noteService) CreateNote(userID uint, title, content string, imageFile *multipart.FileHeader) error {
+func (s *noteService) CreateNote(userID uint, title, content string, imageFile *multipart.FileHeader) (*Note,error) {
 	if userID == 0 {
-		return errors.New("user ID can not become zero")
+		return nil, errors.New("user ID can not become zero")
 	}
 	noteText := fmt.Sprintf("Title: %s\nContent: %s", title, content)
 	log.Println(noteText)
@@ -98,33 +98,33 @@ func (s *noteService) CreateNote(userID uint, title, content string, imageFile *
 	}
 
 	if err := s.repo.Create(note); err != nil {
-		return err
+		return nil,err
 	}
 
 	if imageFile != nil {
 		if err := s.handleImageUpload(note.ID, imageFile); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return note, nil
 }
 
-func (s *noteService) CreateVoiceNote(userID uint, audioFile *multipart.FileHeader, title string, imageFile *multipart.FileHeader) error {
+func (s *noteService) CreateVoiceNote(userID uint, audioFile *multipart.FileHeader, title string, imageFile *multipart.FileHeader) (*Note, error) {
 	if userID == 0 {
-		return errors.New("user ID cannot be zero")
+		return nil,errors.New("user ID cannot be zero")
 	}
 	if audioFile == nil {
-		return errors.New("audio file is required")
+		return nil,errors.New("audio file is required")
 	}
 
 	audio, err := audioFile.Open()
 	if err != nil {
-		return err
+		return nil,err
 	}
 
 	transcript, err := s.transcriber.Transcribe(context.Background(), audio)
 	if err != nil {
-		return err
+		return nil,err
 	}
 
 	noteTitle := title
