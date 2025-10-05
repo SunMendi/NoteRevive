@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"os"
 	"time"
+	"log"
 
 	"notemind/internal/llm"
 	"notemind/internal/voice"
@@ -80,6 +81,7 @@ func (s *noteService) CreateNote(userID uint, title, content string, imageFile *
 		return errors.New("user ID can not become zero")
 	}
 	noteText := fmt.Sprintf("Title: %s\nContent: %s", title, content)
+	log.Println(noteText)
 	summary, err := s.llmservice.GenerateNoteSummary(noteText)
 
 	if err != nil {

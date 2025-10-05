@@ -10,12 +10,11 @@ import (
 type User struct {
 	ID       uint   `json:"id" gorm:"primaryKey"`
 	Name     string `json:"name" gorm:"not null"`
-	//GoogleID string `json:"google_id" gorm:"not null"`
 	Email    string `json:"email" gorm:"uniqueIndex;not null"`
 
 	Birthday time.Time `json:"birthday"`
 	Gender   string    `json:"gender"`
-	Timezone string    `json:"timezone" gorm:"not null"`
+	Timezone string    `json:"timezone"`
 
 	Notes []note.Note `json:"notes" gorm:"foreignKey:UserID"`
 

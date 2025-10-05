@@ -17,6 +17,12 @@ func NewNoteHandler(noteService NoteService) *NoteHandler {
 }
 
 func (h *NoteHandler) CreateNote(ctx *gin.Context) {
+
+	userID, exists := ctx.Get("user_id")
+    if !exists {
+        ctx.JSON(401, gin.H{"error": "User not authenticated"})
+        return
+    }
 	//get user id from middleware
 	var req CreateNoteDTO
 
@@ -30,10 +36,10 @@ func (h *NoteHandler) CreateNote(ctx *gin.Context) {
 	if err != nil {
 		log.Println("image file is missing")
 	}
-	userID := 1
+	
 	audioFile, err := ctx.FormFile("audio")
 	if err == nil {
-		if err := h.noteService.CreateVoiceNote(1, audioFile, req.Title, imageFile); err != nil {
+		if err := h.noteService.CreateVoiceNote(userID.(uint), audioFile, req.Title, imageFile); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -41,7 +47,7 @@ func (h *NoteHandler) CreateNote(ctx *gin.Context) {
 		return
 	}
 
-	err = h.noteService.CreateNote(uint(userID), req.Title, req.Content, imageFile)
+	err = h.noteService.CreateNote(userID.(uint), req.Title, req.Content, imageFile)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -52,6 +58,13 @@ func (h *NoteHandler) CreateNote(ctx *gin.Context) {
 }
 
 func (h *NoteHandler) UpdateNote(ctx *gin.Context) {
+
+	userID, exists := ctx.Get("user_id")
+    if !exists {
+        ctx.JSON(401, gin.H{"error": "User not authenticated"})
+        return
+    }
+
 	noteIDStr := ctx.Param("id")
 	noteID, err := strconv.ParseUint(noteIDStr, 10, 32)
 	if err != nil {
@@ -76,10 +89,10 @@ func (h *NoteHandler) UpdateNote(ctx *gin.Context) {
 		})
 		return
 	}
-	userID := uint(1) // Replace with actual user from JWT middleware
+	// Replace with actual user from JWT middleware
 
 	// STEP 5: Update note
-	err = h.noteService.UpdateNote(uint(noteID), userID, req.Title, req.Content, imageFile)
+	err = h.noteService.UpdateNote(uint(noteID), userID.(uint), req.Title, req.Content, imageFile)
 	if err != nil {
 		// Handle different error types
 		if err.Error() == "note not found" {
