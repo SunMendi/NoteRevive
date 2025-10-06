@@ -74,7 +74,7 @@ func (r *authRepo) SendDailySummary() error{
 		}
 
 		for _, user := range users {
-			// Check if it's 8 PM in user's timezone
+			//Check if it's 8 PM in user's timezone
 			userLocalTime := time.Now().In(loc)
 			isEightPM := userLocalTime.Hour() == 20 // 20 = 8 PM in 24-hour format
 

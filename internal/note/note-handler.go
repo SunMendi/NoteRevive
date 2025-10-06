@@ -20,6 +20,7 @@ func (h *NoteHandler) CreateNote(ctx *gin.Context) {
 	// Get user_id from middleware context with proper type assertion
 	userIDInterface, exists := ctx.Get("user_id")
 	if !exists {
+		log.Println("user ID does not exist")
 		ctx.JSON(401, gin.H{"error": "User not authenticated"})
 		return
 	}
@@ -27,6 +28,7 @@ func (h *NoteHandler) CreateNote(ctx *gin.Context) {
 	// Convert interface{} to uint
 	userID, ok := userIDInterface.(uint)
 	if !ok {
+		log.Println("Invalid user ID type")
 		ctx.JSON(401, gin.H{"error": "Invalid user ID type"})
 		return
 	}

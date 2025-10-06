@@ -4,6 +4,7 @@ import (
 	"os"
 	"errors"
 	"strings"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -42,6 +43,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			 c.JSON(401, gin.H{
 				"errors":"Authorization Header Required",
 			 })
+			 log.Println("token is missing")
 			 c.Abort()
 			 return 
 		 }
