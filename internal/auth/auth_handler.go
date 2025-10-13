@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,6 +44,7 @@ func (h *AuthHandler) SendDailySummary(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to send daily summary: " + err.Error(),
 		})
+		log.Println("server issue")
 		return
 	}
 

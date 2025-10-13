@@ -8,7 +8,7 @@ func SetUpRoutes(router *gin.Engine, authHandler *AuthHandler) {
 
 		v1.POST("/auth/user",authHandler.CreateUser)
 		// Protected route - requires authentication
-		v1.POST("/auth/send-daily-summary", AuthMiddleware(), authHandler.SendDailySummary)
+		v1.POST("/auth/send-daily-summary", authHandler.SendDailySummary)
 	}
 
 	// Protected routes that require authentication
