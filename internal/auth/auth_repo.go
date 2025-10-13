@@ -76,13 +76,13 @@ func (r *authRepo) SendDailySummary() error{
 		for _, user := range users {
 			//Check if it's 8 PM in user's timezone
 			userLocalTime := time.Now().In(loc)
-			isEightPM := userLocalTime.Hour() == 20 // 20 = 8 PM in 24-hour format
+			// isEightPM := userLocalTime.Hour() == 20 // 20 = 8 PM in 24-hour format
 
-			if !isEightPM {
-				fmt.Printf("⏰ Skipping %s - Current time in %s is %d:00 (waiting for 20:00/8 PM)\n",
-					user.Email, tz, userLocalTime.Hour())
-				continue
-			}
+			// if !isEightPM {
+			// 	fmt.Printf("⏰ Skipping %s - Current time in %s is %d:00 (waiting for 20:00/8 PM)\n",
+			// 		user.Email, tz, userLocalTime.Hour())
+			// 	continue
+			// }
 
 			fmt.Printf("🕗 It's 8 PM in %s timezone for user %s - sending email now!\n", tz, user.Email)
 

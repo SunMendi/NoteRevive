@@ -8,6 +8,7 @@ type NoteRepo interface {
 	Create(note *Note) error
 	CreateImg(noteImage *NoteImage) error
 	Update(note *Note) error
+	Delete(id uint) error 
 	GetByID(id uint) (*Note, error)
 	DeleteImagesByNoteID(id uint) error
 }
@@ -42,4 +43,8 @@ func (r *noterepo) Update(note *Note) error {
 
 func (r *noterepo) DeleteImagesByNoteID(noteID uint) error {
 	return r.db.Where("note_id = ?", noteID).Delete(&NoteImage{}).Error
+}
+
+func(r *noterepo) Delete(id uint) error {
+	return r.db.Delete(&Note{}, id).Error 
 }
